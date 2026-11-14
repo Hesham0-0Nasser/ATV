@@ -3,7 +3,6 @@
   <img alt="ATV — Anything To Video" src="assets/atv-header-light.png" width="100%">
 </picture>
 
-<p align="center">Made by <a href="https://github.com/Hesham0-0Nasser">Hesham Nasser (@Hesham0-0Nasser)</a> · GPL-3.0 · Windows and macOS</p>
 
 **ATV** turns any file or folder into a black-and-white pixel video (black = 0, white = 1), and turns that video back into the exact same files. Lock it with a password or a key file, keep it on a drive, or put it on YouTube or WhatsApp and restore the files from the copy the site gives back.
 
