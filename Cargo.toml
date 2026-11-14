@@ -1,0 +1,59 @@
+[workspace]
+resolver = "3"
+members = ["crates/atv-core", "crates/atv-cli", "crates/atv-gui"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+publish = false
+authors = ["Hesham Nasser (@Hesham0-0Nasser)"]
+license = "GPL-3.0-only"
+repository = "https://github.com/Hesham0-0Nasser/ATV"
+
+[workspace.dependencies]
+atv-core = { path = "crates/atv-core" }
+
+argon2 = { version = "0.6.0", default-features = false, features = ["alloc", "zeroize"] }
+chacha20poly1305 = { version = "0.11.0", default-features = false, features = ["alloc", "zeroize"] }
+base64 = "0.22.1"
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "std"] }
+clap = { version = "4.6.7", features = ["derive"] }
+crc32fast = "1.5.5"
+ctrlc = "3.5.2"
+directories = "6.0.0"
+getrandom = "0.4.3"
+hkdf = "0.13.0"
+reed-solomon = "0.2.1"
+rpassword = "7.5.5"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha2 = "0.11.1"
+# Tauri 2 (the owner chose it over Slint after milestone 4).
+tauri = { version = "2.12.5", features = ["macos-private-api"] }
+tauri-build = { version = "2.7.4", features = [] }
+tauri-plugin-dialog = "2.8.4"
+tar = { version = "0.4.46", default-features = false }
+tempfile = "3.27.0"
+thiserror = "2.0.21"
+unicode-normalization = "0.1.26"
+# Downloading ffmpeg, yt-dlp and Deno from their official releases (owner's request).
+ureq = "3.5.2"
+zeroize = "1.9.1"
+zstd = "0.14.3"
+# Password strength: weak password-only videos are refused (owner's choice, 14 Nov 2026).
+zxcvbn = { version = "3.1.1", default-features = false }
+zip = { version = "9.5.1", default-features = false, features = ["deflate"] }
+
+# Tests run in the dev profile. The pixel loops and the hashing are far too
+# slow without optimisation, so keep a little for our code and full
+# optimisation for dependencies.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+codegen-units = 4

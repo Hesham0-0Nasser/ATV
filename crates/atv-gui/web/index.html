@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATV</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="app.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div id="app" class="t-light">
+
+  <!-- Windows: the design's own caption buttons (unified title bar). -->
+  <div class="caption" id="caption" hidden>
+    <button data-action="win-minimize" aria-label="Minimize" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" fill="none"><path d="M0 5h10"/></svg></button>
+    <button data-action="win-maximize" aria-label="Maximize" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" fill="none"><rect x="0.5" y="0.5" width="9" height="9" rx="1"/></svg></button>
+    <button data-action="win-close" class="close" aria-label="Close" tabindex="-1"><svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" fill="none"><path d="M0 0l10 10M10 0L0 10"/></svg></button>
+  </div>
+
+  <div class="frame">
+    <!-- Sidebar -->
+    <nav class="sidebar" aria-label="Sections">
+      <div class="sidebar-top" data-tauri-drag-region></div>
+      <div class="brand" data-tauri-drag-region>
+        <div class="mark" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i></div>
+        <div style="display:flex; flex-direction:column" data-tauri-drag-region><div class="brand-name" data-tauri-drag-region>ATV</div><div class="brand-sub" data-tauri-drag-region>Anything To Video</div></div>
+      </div>
+      <div class="nav">
+        <button class="nav-item" data-page="encode"><span data-icon="video"></span><span>Encode</span></button>
+        <button class="nav-item" data-page="decode"><span data-icon="document"></span><span>Decode</span></button>
+        <button class="nav-item" data-page="history"><span data-icon="clock"></span><span>History</span></button>
+      </div>
+      <div class="grow" data-tauri-drag-region></div>
+      <button class="job-chip" id="job-chip" data-action="go-to-job" title="Back to the running job" hidden>
+        <svg class="ring" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle class="track" cx="10" cy="10" r="7.5" stroke-width="2.5"/><circle class="fill" id="job-chip-ring" cx="10" cy="10" r="7.5" stroke-width="2.5" stroke-dasharray="0 47.1"/></svg>
+        <div class="meta"><span id="job-chip-verb">Encoding</span><span id="job-chip-name"></span></div>
+        <span class="pct" id="job-chip-pct">0%</span>
+      </button>
+      <button class="nav-item" data-page="settings"><span data-icon="sliders"></span><span>Settings</span><span class="nav-badge" id="nav-badge" title="Tool updates available" hidden></span></button>
+    </nav>
+
+    <main class="content">
+      <div class="toolbar" data-tauri-drag-region>
+        <div class="title" id="title" data-tauri-drag-region>File to Video</div>
+        <div class="subtitle" id="subtitle" data-tauri-drag-region></div>
+        <button class="btn small" id="clear-history" data-action="ask-clear-history" hidden>Clear History…</button>
+      </div>
+
+      <div class="banner" id="banner" hidden>
+        <span data-icon="warning"></span>
+        <div class="text"><b>ffmpeg not found.</b> <span>Encode and Decode are off until it’s installed.</span></div>
+        <button class="btn small" data-page="settings" id="banner-open">Open Settings</button>
+      </div>
+
+      <!-- ===================================================== first-run setup wizard -->
+      <section class="screen" id="screen-wizard" hidden>
+        <div class="center">
+          <div class="wizard">
+            <div class="wz-steps" id="wz-steps"><span data-step="welcome">Welcome</span><span data-step="tools">Tools</span><span data-step="ready">Ready</span></div>
+            <div class="wz-page" id="wz-welcome">
+              <div class="mark huge" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i></div>
+              <div class="display">Welcome to ATV</div>
+              <div class="hint" style="margin-top:4px">by <button class="link inline" data-action="open-author" title="https://github.com/Hesham0-0Nasser">Hesham Nasser (@Hesham0-0Nasser)</button></div>
+              <div class="sub">ATV turns any files into a black-and-white pixel video, and the video back into the exact same files. First, let’s get the free tools it works with. It takes a minute or two.</div>
+              <div class="actions"><button class="btn" data-action="wz-skip">Skip Setup</button><button class="btn primary" data-action="wz-next">Get Started</button></div>
+            </div>
+            <div class="wz-page" id="wz-tools" hidden>
+              <div class="display">Install the tools</div>
+              <div class="sub">ATV downloads each one from its official release and checks it against the checksum the project publishes. Nothing else is installed.</div>
+              <div class="card pad wz-card">
+              <div class="wz-tool" data-wz="ffmpeg">
+                <div class="tool-head"><span class="status-dot" data-part="dot"></span><span class="tool-name">ffmpeg</span><span class="tool-chip" data-part="chip">Required</span><span class="tool-gap"></span><span class="hint" data-part="state"></span></div>
+                <div class="hint" data-part="purpose"></div>
+                <div class="tool-note" data-part="note" hidden></div>
+                <div class="tool-progress" data-part="progress" hidden><div class="progress"><i data-part="bar"></i></div><div class="row" style="gap:8px; margin-top:6px"><span class="label hint" data-part="progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+              </div>
+                <div class="sep"></div>
+                <div class="row wz-switch"><div class="label" style="display:flex; flex-direction:column; gap:2px"><div id="lbl-wz-yt">Open videos from YouTube links</div><div class="hint">Optional. Needs yt-dlp and a JavaScript runtime such as Deno. You can add them later in Settings.</div></div><button class="switch" role="switch" aria-labelledby="lbl-wz-yt" data-action="wz-youtube" id="wz-youtube"></button></div>
+              <div class="wz-tool" data-wz="ytdlp">
+                <div class="tool-head"><span class="status-dot" data-part="dot"></span><span class="tool-name">yt-dlp</span><span class="tool-chip" data-part="chip">Optional</span><span class="tool-gap"></span><span class="hint" data-part="state"></span></div>
+                <div class="hint" data-part="purpose"></div>
+                <div class="tool-note" data-part="note" hidden></div>
+                <div class="tool-progress" data-part="progress" hidden><div class="progress"><i data-part="bar"></i></div><div class="row" style="gap:8px; margin-top:6px"><span class="label hint" data-part="progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+              </div>
+              <div class="wz-tool" data-wz="deno">
+                <div class="tool-head"><span class="status-dot" data-part="dot"></span><span class="tool-name">Deno</span><span class="tool-chip" data-part="chip">Optional</span><span class="tool-gap"></span><span class="hint" data-part="state"></span></div>
+                <div class="hint" data-part="purpose"></div>
+                <div class="tool-note" data-part="note" hidden></div>
+                <div class="tool-progress" data-part="progress" hidden><div class="progress"><i data-part="bar"></i></div><div class="row" style="gap:8px; margin-top:6px"><span class="label hint" data-part="progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+              </div>
+              </div>
+              <div class="actions">
+                <button class="btn" data-action="wz-back" id="wz-back">Back</button>
+                <button class="btn" data-action="wz-skip" id="wz-skip">Skip</button>
+                <button class="btn" data-action="check-ffmpeg" id="wz-check" hidden>Check Again</button>
+                <button class="btn primary" data-action="wz-install" id="wz-install" hidden>Install</button>
+                <button class="btn primary" data-action="wz-next" id="wz-continue" hidden>Continue</button>
+              </div>
+            </div>
+            <div class="wz-page" id="wz-ready" hidden>
+              <div class="disc good"><span data-icon="check" data-size="26" data-stroke="2"></span></div>
+              <div class="display">ATV is ready</div>
+              <div class="sub" id="wz-ready-text"></div>
+              <div class="actions"><button class="btn primary" data-action="wz-finish">Start Using ATV</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== ffmpeg first run -->
+      <section class="screen" id="screen-setup" hidden>
+        <div class="center">
+          <div style="width:480px; display:flex; flex-direction:column; align-items:center">
+            <div class="disc warn"><span data-icon="video-off" data-size="26" data-stroke="1.3"></span></div>
+            <div class="display">ATV needs ffmpeg</div>
+            <div class="sub" id="setup-sub">ffmpeg is a free video tool. ATV uses it to write and read videos. Install it, then choose Check Again.</div>
+            <div class="install"><span class="caption-text" id="install-hint"></span><span class="mono" style="font-size:12px" id="install-command"></span></div>
+            <button class="link" data-action="open-ffmpeg-site">Download from ffmpeg.org</button>
+            <div class="setup-progress" id="setup-progress" hidden><div class="progress"><i id="setup-bar"></i></div><div class="row" style="gap:8px; margin-top:8px"><span class="label hint" id="setup-progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+            <div class="field-error" id="setup-error" style="margin-top:12px" hidden><span data-icon="error-circle" data-size="14"></span><span id="setup-error-text"></span></div>
+            <div class="actions">
+              <button class="btn" data-page="settings">Open Settings</button>
+              <button class="btn primary" data-action="check-ffmpeg" id="setup-check">Check Again</button>
+              <button class="btn primary" data-action="tool-install" data-tool="ffmpeg" id="setup-install" hidden>Install ffmpeg</button>
+            </div>
+            <div class="tech" id="setup-problem"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 1 Encode -->
+      <section class="screen" id="screen-encode" hidden>
+        <!-- 1a empty -->
+        <div class="view" id="enc-empty">
+          <div class="scroll" style="display:flex; flex-direction:column; gap:14px; padding-top:4px" id="enc-empty-body">
+            <div class="drop">
+              <span data-icon="tray-in" data-size="44" data-stroke="0.8"></span>
+              <div class="big">Drop files or a folder</div>
+              <div class="hint">You can add several items at once.</div>
+              <div class="btns">
+                <button class="btn" data-action="pick-files">Choose Files…</button>
+                <button class="btn" data-action="pick-folder">Choose Folder…</button>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px; opacity:0.5; pointer-events:none" aria-hidden="true">
+              <div class="card" style="padding:12px 16px 14px; display:flex; flex-direction:column; gap:10px"><div style="font-weight:600">Video</div><div class="row"><span class="label">Resolution</span><span class="hint" id="quiet-res">1080p</span></div><div class="row"><span class="label">Mode</span><span class="hint" id="quiet-mode">Lossless</span></div></div>
+              <div class="card" style="padding:12px 16px 14px; display:flex; flex-direction:column; gap:10px"><div style="font-weight:600">Protection</div><div class="row"><span class="label">Encryption</span><span class="hint" id="quiet-enc">On</span></div><div class="hint">Set a password after adding items.</div></div>
+              <div class="card" style="padding:12px 16px 14px; display:flex; flex-direction:column; gap:10px"><div style="font-weight:600">Extras</div><div class="row"><span class="label">Compress</span><span class="hint" id="quiet-cmp">On</span></div><div class="row"><span class="label">Verify</span><span class="hint" id="quiet-vrf">On</span></div></div>
+            </div>
+          </div>
+          <div class="bar">
+            <div class="stat"><div class="k">Video length</div><div class="v">—</div></div>
+            <div class="stat"><div class="k">File size</div><div class="v">—</div></div>
+            <div class="stat"><div class="k">Frames</div><div class="v">—</div></div>
+            <div class="reason">Add at least one item</div>
+            <button class="btn primary large" disabled>Create Video</button>
+          </div>
+        </div>
+
+        <!-- 1b ready -->
+        <div class="view" id="enc-ready" hidden>
+          <div class="scroll grid2">
+            <div class="stack">
+              <div class="card">
+                <div class="row" style="padding:10px 10px 6px 16px"><div class="label" style="font-weight:600">Items</div>
+                  <button class="btn small" data-action="pick-files"><span data-icon="plus" data-size="12" data-stroke="1.8"></span>Add Files</button>
+                  <button class="btn small" data-action="pick-folder"><span data-icon="plus" data-size="12" data-stroke="1.8"></span>Add Folder</button>
+                </div>
+                <div class="items" id="enc-items"></div>
+                <div class="items-foot"><span id="enc-count"></span><span class="tabular" id="enc-total"></span></div>
+              </div>
+              <div class="card pad" id="dest-card">
+                <div class="card-title" style="padding-bottom:6px">Where is this video going?</div>
+                <div class="dest" role="radiogroup" aria-label="Where is this video going?">
+                  <button role="radio" data-action="pick-dest" data-dest="keep"><b>Keep or send as a file</b><span>Drive, USB, desktop apps</span></button>
+                  <button role="radio" data-action="pick-dest" data-dest="whatsapp"><b>WhatsApp from a phone</b><span>Sent untouched</span></button>
+                  <button role="radio" data-action="pick-dest" data-dest="youtube"><b>YouTube</b><span>Survives re-encoding</span></button>
+                  <button role="radio" data-action="pick-dest" data-dest="custom"><b>Custom</b><span>Your own settings</span></button>
+                </div>
+                <div class="hint" style="padding:8px 0 12px" id="dest-hint"></div>
+              </div>
+              <div class="card pad">
+                <div class="card-title">Video</div>
+                <div class="row" style="height:38px"><div class="label" id="lbl-res">Resolution</div>
+                  <div class="seg" role="radiogroup" aria-labelledby="lbl-res" data-seg="resolution"><button role="radio" data-value="1080p">1080p</button><button role="radio" data-value="4k">4K</button></div>
+                </div>
+                <div class="sep"></div>
+                <div style="padding:8px 0 10px">
+                  <div class="row" style="height:26px"><div class="label" id="lbl-mode">Mode</div>
+                    <div class="seg" role="radiogroup" aria-labelledby="lbl-mode" data-seg="mode"><button role="radio" data-value="lossless">Lossless</button><button role="radio" data-value="robust">Robust</button></div>
+                  </div>
+                  <div class="hint" style="margin-top:6px" id="mode-hint"></div>
+                </div>
+                <div id="block-row" hidden>
+                  <div class="sep"></div>
+                  <div style="padding:8px 0 10px">
+                    <div class="row" style="height:26px"><div class="label" id="lbl-cell">Block size</div>
+                      <div class="seg" role="radiogroup" aria-labelledby="lbl-cell" data-seg="cell"><button role="radio" data-value="4">4 × 4</button><button role="radio" data-value="8">8 × 8</button></div>
+                    </div>
+                    <div class="hint" style="margin-top:6px">Larger is safer but holds less.</div>
+                    <div class="row" style="height:26px; margin-top:10px"><div class="label" id="lbl-parity">Repair strength</div>
+                      <div class="seg" role="radiogroup" aria-labelledby="lbl-parity" data-seg="parity"><button role="radio" data-value="32">Standard</button><button role="radio" data-value="64">Strong</button></div>
+                    </div>
+                    <div class="hint" style="margin-top:6px" id="parity-hint"></div>
+                    <div id="av1-row">
+                      <div class="row" style="height:30px; margin-top:8px"><div class="label" id="lbl-av1">Smaller upload (slower)</div><button class="switch" role="switch" aria-labelledby="lbl-av1" data-switch="av1"></button></div>
+                      <div class="hint" id="av1-hint"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card pad" style="padding-bottom:14px">
+                <div class="card-title" style="padding-bottom:10px">Output</div>
+                <div class="field" style="padding-right:9px"><span id="out-name" style="flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis"></span></div>
+                <div class="row" style="gap:8px; margin-top:10px">
+                  <span data-icon="folder" data-size="14" style="color:var(--text3)"></span>
+                  <div class="label hint" id="out-folder" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis"></div>
+                  <button class="btn small" data-action="change-output">Change…</button>
+                </div>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="card pad" style="padding-bottom:14px">
+                <div class="row" style="padding:12px 0">
+                  <div class="label" style="display:flex; flex-direction:column; gap:1px"><div style="font-weight:600" id="lbl-enc">Protection</div><div class="caption-text">Encryption · XChaCha20-Poly1305</div></div>
+                  <button class="switch" role="switch" aria-labelledby="lbl-enc" data-switch="encrypt"></button>
+                </div>
+                <div id="protection" style="display:flex; flex-direction:column">
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    <div class="field">
+                      <input id="password" type="password" placeholder="Password" autocomplete="new-password" spellcheck="false" aria-label="Password">
+                      <button class="icon-btn" data-action="toggle-password" id="pw-eye" title="Show password" aria-label="Show password" style="width:22px; height:20px; border-radius:5px"><span data-icon="eye" data-size="15" data-stroke="1.3"></span></button>
+                    </div>
+                    <div class="field" id="confirm-field" style="padding-right:4px">
+                      <input id="confirm" type="password" placeholder="Confirm password" autocomplete="new-password" spellcheck="false" aria-label="Confirm password">
+                      <span class="ok" id="pw-match" hidden><span data-icon="check" data-size="13" data-stroke="2"></span>Matches</span>
+                    </div>
+                    <div class="strength" id="strength" hidden><div class="bars"><i></i><i></i><i></i><i></i></div><div class="word" id="strength-word"></div></div>
+                    <div class="field-error" id="pw-weak" hidden><span data-icon="error-circle" data-size="14"></span><span id="pw-weak-text"></span></div>
+                  </div>
+                  <div class="sep" style="margin:14px 0 12px"></div>
+                  <div class="row" style="gap:8px">
+                    <div class="label">Key file</div>
+                    <span id="key-none" style="display:flex; gap:8px">
+                      <button class="btn small" data-action="create-key">Create New Key File…</button>
+                      <button class="btn small" data-action="choose-key">Choose Existing…</button>
+                    </span>
+                    <span class="key-chip" id="key-chip" hidden><span data-icon="key" data-size="13"></span><span id="key-name"></span><button class="icon-btn" style="width:18px; height:18px; border-radius:9px" data-action="clear-key" title="Clear" aria-label="Clear the key file"><span data-icon="close" data-size="9" data-stroke="2.2"></span></button></span>
+                  </div>
+                  <div class="field-error" id="key-error" style="margin-top:8px" hidden><span data-icon="error-circle" data-size="14"></span><span id="key-error-text"></span></div>
+                  <div class="row" style="gap:6px; margin-top:12px; font-size:12px; color:var(--text2); flex-wrap:wrap">
+                    <span style="margin-right:2px">Needed to restore</span>
+                    <span id="needed"></span>
+                  </div>
+                </div>
+                <div class="note" style="margin-top:12px"><span data-icon="info" data-size="14"></span><span id="protection-note">Without the password or key file, the files cannot be recovered.</span></div>
+              </div>
+              <div class="card pad">
+                <div class="card-title" style="padding-bottom:4px">Extras</div>
+                <div class="row" style="height:40px"><div class="label" id="lbl-cmp">Compress before encoding</div><button class="switch" role="switch" aria-labelledby="lbl-cmp" data-switch="compress"></button></div>
+                <div class="row" style="padding:2px 0 10px" id="smallest-row"><div class="label" style="display:flex; flex-direction:column; gap:2px"><div id="lbl-small">Smallest video</div><div class="hint">Compresses harder: documents about 17% smaller. Slower to create; no help for zip, video or photos.</div></div><button class="switch" role="switch" aria-labelledby="lbl-small" data-switch="smallest"></button></div>
+                <div class="sep"></div>
+                <div class="row" style="padding:10px 0 12px"><div class="label" style="display:flex; flex-direction:column; gap:2px"><div id="lbl-vrf">Verify after encoding</div><div class="hint">Decodes the finished video and checks it matches.</div></div><button class="switch" role="switch" aria-labelledby="lbl-vrf" data-switch="verify"></button></div>
+              </div>
+            </div>
+          </div>
+          <div class="bar">
+            <div class="stat"><div class="k">Video length</div><div class="v" id="sum-length">—</div></div>
+            <div class="stat"><div class="k">File size</div><div class="v" id="sum-size">—</div></div>
+            <div class="stat"><div class="k">Frames</div><div class="v" id="sum-frames">—</div></div>
+            <div class="reason" id="start-reason"></div>
+            <button class="btn primary large" id="create-video" data-action="start-encode">Create Video</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 2 Decode -->
+      <section class="screen" id="screen-decode" hidden>
+        <!-- 2a empty -->
+        <div class="view" id="dec-empty">
+          <div class="scroll" style="display:flex; flex-direction:column; gap:14px; padding-top:4px">
+            <div class="drop">
+              <span data-icon="video-outline" data-size="44" data-stroke="0.8"></span>
+              <div class="big" id="dec-drop-title">Drop an ATV video</div>
+              <div class="hint">Restores the original files, checked bit for bit.</div>
+              <div class="btns"><button class="btn" data-action="pick-video" id="dec-choose">Choose…</button></div>
+            </div>
+            <!-- Owner's request: decode straight from a YouTube link. -->
+            <div class="card yt-card" id="yt-card">
+              <div class="yt-head">
+                <span data-icon="link" data-size="16"></span>
+                <div><div style="font-weight:600">From YouTube</div><div class="hint">Paste the link of an ATV video on YouTube. ATV downloads the best copy and opens it here.</div></div>
+              </div>
+              <div class="field" style="margin-top:10px"><input id="yt-link" type="text" placeholder="https://youtu.be/…" spellcheck="false" autocomplete="off" aria-label="YouTube link"></div>
+              <div class="hint" id="yt-checking" style="margin-top:8px" hidden>Asking YouTube about this video…</div>
+              <div class="field-error" id="yt-error" style="margin-top:8px" hidden><span data-icon="error-circle" data-size="14"></span><span id="yt-error-text"></span></div>
+              <div class="caption-text" id="yt-error-detail" style="margin:4px 0 0 21px; overflow-wrap:anywhere" hidden></div>
+              <div class="row" style="gap:10px; margin:8px 0 0 21px" id="yt-fix-row" hidden><button class="btn small primary" id="yt-fix"></button><span class="hint" id="yt-fix-progress"></span></div>
+              <div class="yt-preview" id="yt-preview" hidden>
+                <div class="yt-player" id="yt-player"></div>
+                <div class="facts">
+                  <div class="yt-title" id="yt-title"></div>
+                  <div class="fact"><span>Channel</span><span id="yt-channel"></span></div>
+                  <div class="fact"><span>Length</span><span id="yt-length"></span></div>
+                  <div class="fact"><span>Best copy</span><span id="yt-quality"></span></div>
+                  <div class="yt-warn" id="yt-small" hidden><span data-icon="warning" data-size="14"></span><span>YouTube may still be making the HD copy. ATV can read this smaller one, but a full-size copy has fewer errors to repair.</span></div>
+                  <div class="yt-actions" id="yt-actions">
+                    <button class="btn small" data-action="yt-watch"><span data-icon="globe" data-size="13"></span>Watch on YouTube</button>
+                    <button class="btn small primary" data-action="yt-download" id="yt-download">Download and Open</button>
+                  </div>
+                  <div id="yt-progress" hidden>
+                    <div class="progress" style="margin-top:4px"><i id="yt-bar"></i></div>
+                    <div class="row" style="gap:8px; margin-top:8px"><span class="label hint" id="yt-progress-text">Asking YouTube for the best copy…</span><button class="btn small" data-action="yt-cancel">Cancel</button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bar">
+            <div class="reason">Choose a video first</div>
+            <button class="btn primary large" disabled>Restore Files</button>
+          </div>
+        </div>
+
+        <!-- 2b loaded, and 2e wrong password -->
+        <div class="view" id="dec-loaded" hidden>
+          <div class="scroll grid2">
+            <div class="card info-card">
+              <div class="thumb"><canvas id="dec-thumb" width="480" height="270"></canvas></div>
+              <div class="row" style="gap:8px; margin:12px 0 4px"><span class="label" style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" id="dec-name"></span><span class="caption-text" id="dec-format"></span></div>
+              <div class="info-line"><span>Resolution</span><span id="dec-res"></span></div>
+              <div class="info-line" id="dec-source-line" hidden><span>From</span><span id="dec-source"></span></div>
+              <div class="info-line" id="dec-resized-line" hidden><span>Resized by a site</span><span id="dec-resized"></span></div>
+              <div class="info-line"><span>Mode</span><span id="dec-mode"></span></div>
+              <div class="info-line"><span>Length</span><span id="dec-length"></span></div>
+              <div class="info-line"><span>Protection</span><span id="dec-lock-icon"><span data-icon="lock" data-size="13"></span></span><span id="dec-protection"></span></div>
+              <div class="info-foot" id="dec-names-hidden"><span data-icon="document" data-size="13"></span>File names are shown after unlocking.</div>
+              <div class="info-foot" id="dec-names-plain" hidden><span data-icon="document" data-size="13"></span><span id="dec-size"></span></div>
+            </div>
+            <div class="stack">
+              <div class="card" style="padding:12px 16px 16px" id="unlock-card">
+                <div style="font-weight:600">Unlock</div>
+                <div class="hint" style="margin:2px 0 12px">Use what was set when this video was made.</div>
+                <div class="field" id="dec-pw-field" style="padding-right:9px"><input id="dec-password" type="password" placeholder="Password" autocomplete="current-password" spellcheck="false" aria-label="Password"></div>
+                <div class="field-error" id="unlock-error" style="margin-top:8px" hidden><span data-icon="error-circle" data-size="14"></span><span id="unlock-error-text"></span></div>
+                <div class="row" style="gap:8px; margin-top:12px" id="dec-key-row">
+                  <span class="label">Key file</span>
+                  <span class="key-chip" id="dec-key-chip" hidden><span data-icon="key" data-size="13"></span><span id="dec-key-name"></span><button class="icon-btn" style="width:18px; height:18px; border-radius:9px" data-action="dec-clear-key" title="Clear" aria-label="Clear the key file"><span data-icon="close" data-size="9" data-stroke="2.2"></span></button></span>
+                  <button class="btn small" data-action="dec-choose-key">Choose Key File…</button>
+                </div>
+              </div>
+              <div class="card" style="padding:12px 16px 14px">
+                <div style="font-weight:600; margin-bottom:10px">Output folder</div>
+                <div class="row" style="gap:8px"><span data-icon="folder" data-size="14" style="color:var(--text3)"></span><div class="label hint" id="dec-out" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis"></div><button class="btn small" data-action="dec-change-output">Change…</button></div>
+              </div>
+              <div style="display:flex; justify-content:flex-start"><button class="btn small" data-action="pick-video">Choose Another Video…</button></div>
+            </div>
+          </div>
+          <div class="bar">
+            <div class="stat"><div class="k">Length</div><div class="v" id="dec-bar-length">—</div></div>
+            <div class="stat"><div class="k">Frames</div><div class="v" id="dec-bar-frames">—</div></div>
+            <div class="reason" id="dec-reason"></div>
+            <button class="btn primary large" id="restore-files" data-action="start-decode">Restore Files</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 1d / 2c running (shared) -->
+      <section class="screen" id="screen-running" hidden>
+        <div class="running">
+          <div class="run-head"><b id="run-name"></b><span id="run-meta"></span></div>
+          <div class="run-grid">
+            <div style="display:flex; flex-direction:column; gap:16px; min-height:0">
+              <div class="preview"><canvas id="run-canvas" width="480" height="270"></canvas><div class="tag frame" id="run-frame"></div><div class="tag kind" id="run-tag"></div></div>
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <div class="pct-line"><span class="pct" id="run-pct">0%</span><span class="now" id="run-now"></span></div>
+                <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="run-bar"><i id="run-fill"></i></div>
+                <div class="stats">
+                  <div><div class="k">Speed</div><div class="v" id="run-speed">—</div></div>
+                  <div><div class="k">Elapsed</div><div class="v" id="run-elapsed">0:00</div></div>
+                  <div><div class="k">Time left</div><div class="v" id="run-left">—</div></div>
+                </div>
+                <div class="repaired" id="run-repaired"></div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px">
+              <div class="card steps"><div class="card-title">Steps</div><div id="run-steps"></div></div>
+              <div class="grow"></div>
+              <button class="btn" style="align-self:flex-end" data-action="ask-cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 1e encode done -->
+      <section class="screen" id="screen-enc-done" hidden>
+        <div class="center">
+          <div class="disc good"><span data-icon="check" data-size="26" data-stroke="1.8"></span></div>
+          <div class="display">Video created</div>
+          <div class="sub" style="margin-top:2px">Saved to <span id="done-folder"></span></div>
+          <div class="card done-card">
+            <div class="thumb"><canvas id="done-thumb" width="480" height="270"></canvas></div>
+            <div class="facts">
+              <div class="row" style="gap:8px"><span class="label" style="font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" id="done-name"></span><span class="badge good" id="done-verified"><span data-icon="seal-check" data-size="12" data-stroke="1.6"></span>Verified</span></div>
+              <div class="fact"><span>Length</span><span id="done-length"></span></div>
+              <div class="fact"><span>Size</span><span id="done-size"></span></div>
+              <div class="fact"><span>Resolution</span><span id="done-details"></span></div>
+            </div>
+          </div>
+          <div class="sub" style="font-size:12px" id="done-keep">Keep the password or key file: without it the files cannot be recovered.</div>
+          <div class="actions"><button class="btn reveal-label" data-action="reveal-video">Show in Explorer</button><button class="btn primary" data-action="encode-another">Encode Another</button></div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 2d decode done -->
+      <section class="screen" id="screen-dec-done" hidden>
+        <div style="flex:1; min-height:0; padding:8px 28px 22px; display:flex; flex-direction:column; gap:18px">
+          <div class="row" style="gap:14px">
+            <div class="disc good small"><span data-icon="check" data-size="22" data-stroke="1.8"></span></div>
+            <div class="label" style="display:flex; flex-direction:column; gap:2px">
+              <div class="row" style="gap:10px"><span style="font-size:22px; font-weight:650; letter-spacing:-0.02em">Files restored</span><span class="badge good"><span data-icon="shield-check" data-size="12" data-stroke="1.6"></span>Integrity confirmed</span></div>
+              <div style="color:var(--text2)" id="restored-summary"></div>
+              <div class="caption-text" style="font-size:12px" id="restored-repaired"></div>
+            </div>
+          </div>
+          <div class="card" style="padding:6px; min-height:0; overflow:auto"><div id="restored-items"></div><div class="caption-text" style="padding:6px 10px" id="restored-more"></div></div>
+          <div class="grow"></div>
+          <div style="display:flex; justify-content:flex-end; gap:10px"><button class="btn reveal-label" data-action="reveal-restored">Show in Explorer</button><button class="btn primary" data-action="decode-another">Decode Another</button></div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 1f / 2e error card -->
+      <section class="screen" id="screen-error" hidden>
+        <div class="center">
+          <div class="disc bad" id="err-disc"><span data-icon="warning" data-size="26" data-stroke="1.3"></span></div>
+          <div class="display" id="err-title"></div>
+          <div class="sub" id="err-text"></div>
+          <div class="recover" id="err-recover" hidden>
+            <div class="line"><span>Recoverable</span><span class="tabular" style="font-weight:600" id="err-recover-pct"></span></div>
+            <div class="progress warn"><i id="err-recover-fill"></i></div>
+            <div class="caption-text" id="err-recover-note"></div>
+          </div>
+          <div class="tech" id="err-tech"></div>
+          <div class="actions"><button class="btn" id="err-second" data-action="err-second"></button><button class="btn primary" id="err-first" data-action="err-first"></button></div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 3 History -->
+      <section class="screen" id="screen-history" hidden>
+        <div style="flex:1; min-height:0; padding:0 28px 18px; display:flex; flex-direction:column; gap:12px" id="history-list">
+          <div class="card table" style="min-height:0; overflow:auto">
+            <div class="thead"><span></span><span>Name</span><span>Format</span><span></span><span style="text-align:right">Size</span><span>Result</span><span></span></div>
+            <div id="history-rows"></div>
+          </div>
+          <div class="reassure"><span data-icon="lock" data-size="13"></span>Passwords and key files are never saved.</div>
+        </div>
+        <div class="center" id="history-empty" style="gap:6px; padding-bottom:50px" hidden>
+          <span data-icon="clock" data-size="44" data-stroke="0.8" style="color:var(--text3)"></span>
+          <div style="font-size:17px; font-weight:600; margin-top:6px">No jobs yet</div>
+          <div class="hint">Videos you create and files you restore will appear here.</div>
+          <div class="reassure" style="margin-top:18px"><span data-icon="lock" data-size="13"></span>Passwords and key files are never saved.</div>
+        </div>
+      </section>
+
+      <!-- ===================================================== 4 Settings -->
+      <section class="screen" id="screen-settings" hidden>
+        <div class="scroll grid2">
+          <div class="stack">
+            <div class="card pad">
+              <div class="card-title">Appearance</div>
+              <div class="row" style="height:44px"><span class="label" id="lbl-theme">Theme</span>
+                <div class="seg wide" role="radiogroup" aria-labelledby="lbl-theme" data-seg="appearance"><button role="radio" data-value="system">System</button><button role="radio" data-value="light">Light</button><button role="radio" data-value="dark">Dark</button></div>
+              </div>
+              <div id="material-row" hidden>
+                <div class="sep"></div>
+                <div style="padding:8px 0 12px">
+                  <div class="row" style="height:28px"><span class="label" id="lbl-material">Window glass</span>
+                    <div class="seg wide" role="radiogroup" aria-labelledby="lbl-material" data-seg="material"><button role="radio" data-value="acrylic">Acrylic</button><button role="radio" data-value="mica">Mica</button><button role="radio" data-value="solid">Solid</button></div>
+                  </div>
+                  <div class="hint" style="margin-top:6px" id="material-hint"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card pad">
+              <div class="card-title" style="padding-bottom:2px">Defaults</div>
+              <div class="hint" style="padding-bottom:6px">Used for every new encode. You can change them per job.</div>
+              <div class="set-row"><span class="label" id="lbl-dres">Resolution</span><div class="seg" role="radiogroup" aria-labelledby="lbl-dres" data-seg="default-resolution"><button role="radio" data-value="1080p">1080p</button><button role="radio" data-value="4k">4K</button></div></div>
+              <div class="set-row"><span class="label" id="lbl-dmode">Mode</span><div class="seg" role="radiogroup" aria-labelledby="lbl-dmode" data-seg="default-mode"><button role="radio" data-value="lossless">Lossless</button><button role="radio" data-value="robust">Robust</button></div></div>
+              <div class="set-row" id="default-cell-row"><span class="label" id="lbl-dcell">Block size</span><div class="seg" role="radiogroup" aria-labelledby="lbl-dcell" data-seg="default-cell"><button role="radio" data-value="4">4 × 4</button><button role="radio" data-value="8">8 × 8</button></div></div>
+              <div class="set-row" id="default-parity-row"><span class="label" id="lbl-dparity">Repair strength</span><div class="seg" role="radiogroup" aria-labelledby="lbl-dparity" data-seg="default-parity"><button role="radio" data-value="32">Standard</button><button role="radio" data-value="64">Strong</button></div></div>
+              <div class="set-row"><span class="label" id="lbl-dcmp">Compress before encoding</span><button class="switch" role="switch" aria-labelledby="lbl-dcmp" data-switch="default-compress"></button></div>
+              <div class="set-row" id="default-smallest-row"><span class="label" id="lbl-dsmall">Smallest video (slower)</span><button class="switch" role="switch" aria-labelledby="lbl-dsmall" data-switch="default-smallest"></button></div>
+              <div class="set-row"><span class="label" id="lbl-dvrf">Verify after encoding</span><button class="switch" role="switch" aria-labelledby="lbl-dvrf" data-switch="default-verify"></button></div>
+              <div class="set-row" style="min-height:44px"><span class="label">Output folder</span><span class="hint" id="set-out" style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis"></span><button class="btn small" data-action="choose-output-folder">Change…</button></div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card pad" id="tools-card">
+              <div class="row" style="padding:12px 0 2px"><span class="label" style="font-weight:600">Tools</span><span class="caption-text" id="tools-checked"></span><button class="btn small" data-action="wz-again" id="wz-again">Run Setup</button><button class="btn small" data-action="tools-check" id="tools-check">Check for Updates</button></div>
+              <div class="hint" style="padding-bottom:6px">ATV installs these from their official releases and checks every download against the checksum the project publishes.</div>
+              <div class="tool" data-tool-row="ffmpeg">
+                <div class="tool-head"><span class="status-dot" data-part="dot" id="ff-dot"></span><span class="tool-name">ffmpeg</span><span class="tool-ver" data-part="version"></span><span class="tool-chip" data-part="chip" hidden></span><span class="tool-gap"></span><button class="btn small" data-action="tool-install" data-tool="ffmpeg" data-part="action" hidden></button></div>
+                <div class="hint" data-part="purpose"></div>
+                <div class="tool-note" data-part="note" hidden></div>
+                <div class="tool-progress" data-part="progress" hidden><div class="progress"><i data-part="bar"></i></div><div class="row" style="gap:8px; margin-top:6px"><span class="label hint" data-part="progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+                <div class="set-row" style="min-height:40px"><span class="path mono" id="ff-path"></span><button class="btn small" data-action="clear-ffmpeg" id="ff-auto" hidden>Use Automatic</button><button class="btn small" data-action="choose-ffmpeg">Choose…</button></div>
+                <div id="ff-missing" hidden style="padding-bottom:10px">
+                  <div class="field-error" style="margin-bottom:10px" id="ff-problem-line"><span data-icon="error-circle" data-size="14"></span><span id="ff-problem"></span></div>
+                  <div class="note" style="flex-direction:column; gap:4px"><span class="caption-text" id="ff-install-hint"></span><span class="mono" style="font-size:12px; color:var(--text); user-select:text" id="ff-install-command"></span></div>
+                  <div style="margin-top:10px"><button class="btn small" data-action="check-ffmpeg">Check Again</button></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="tool" data-tool-row="ytdlp">
+                <div class="tool-head"><span class="status-dot" data-part="dot"></span><span class="tool-name">yt-dlp</span><span class="tool-ver" data-part="version"></span><span class="tool-chip" data-part="chip" hidden></span><span class="tool-gap"></span><button class="btn small" data-action="tool-install" data-tool="ytdlp" data-part="action" hidden></button></div>
+                <div class="hint" data-part="purpose"></div>
+                <div class="tool-path mono" data-part="path" hidden></div>
+                <div class="tool-note" data-part="note" hidden></div>
+                <div class="tool-progress" data-part="progress" hidden><div class="progress"><i data-part="bar"></i></div><div class="row" style="gap:8px; margin-top:6px"><span class="label hint" data-part="progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+              </div>
+              <div class="sep"></div>
+              <div class="tool" data-tool-row="deno">
+                <div class="tool-head"><span class="status-dot" data-part="dot"></span><span class="tool-name">Deno</span><span class="tool-ver" data-part="version"></span><span class="tool-chip" data-part="chip" hidden></span><span class="tool-gap"></span><button class="btn small" data-action="tool-install" data-tool="deno" data-part="action" hidden></button></div>
+                <div class="hint" data-part="purpose"></div>
+                <div class="tool-path mono" data-part="path" hidden></div>
+                <div class="tool-note" data-part="note" hidden></div>
+                <div class="tool-progress" data-part="progress" hidden><div class="progress"><i data-part="bar"></i></div><div class="row" style="gap:8px; margin-top:6px"><span class="label hint" data-part="progress-text"></span><button class="btn small" data-action="tool-cancel">Cancel</button></div></div>
+              </div>
+            </div>
+            <div class="card about">
+              <div class="mark big" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i></div>
+              <div style="display:flex; flex-direction:column; gap:1px"><span style="font-weight:600">ATV — Anything To Video</span><span class="hint" id="about-version"></span><span class="hint">Made by <button class="link inline" data-action="open-author" title="https://github.com/Hesham0-0Nasser">Hesham Nasser (@Hesham0-0Nasser)</button></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1c drag-over -->
+      <div class="drag-overlay" id="drag-overlay" hidden>
+        <div class="disc"><span data-icon="plus" data-size="26" data-stroke="1.5"></span></div>
+        <div class="big" id="drag-title">Drop to add</div>
+        <div class="hint">Release anywhere in this area.</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div class="scrim" id="dialog" hidden>
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-body">
+      <div class="title" id="dialog-title"></div>
+      <div class="body" id="dialog-body"></div>
+      <div class="actions"><button class="btn" id="dialog-keep" data-action="dialog-keep"></button><button class="btn danger" id="dialog-go" data-action="dialog-go"></button></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

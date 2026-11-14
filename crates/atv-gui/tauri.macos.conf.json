@@ -1,0 +1,34 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "ATV",
+        "width": 1100,
+        "height": 720,
+        "minWidth": 880,
+        "minHeight": 600,
+        "dragDropEnabled": true,
+        "visible": false,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": {
+          "x": 20,
+          "y": 26
+        },
+        "transparent": true,
+        "windowEffects": {
+          "effects": [
+            "sidebar"
+          ]
+        }
+      }
+    ]
+  },
+  "bundle": {
+    "targets": [
+      "app",
+      "dmg"
+    ]
+  }
+}

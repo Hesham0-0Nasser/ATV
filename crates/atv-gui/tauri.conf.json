@@ -1,0 +1,47 @@
+{
+  "productName": "ATV",
+  "mainBinaryName": "AnythingToVideo",
+  "version": "0.1.0",
+  "identifier": "app.atv.desktop",
+  "build": {
+    "frontendDist": "web"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "ATV",
+        "width": 1100,
+        "height": 720,
+        "minWidth": 880,
+        "minHeight": 600,
+        "dragDropEnabled": true,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' data: https://i.ytimg.com; frame-src https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.icns",
+      "icons/icon.png"
+    ],
+    "publisher": "Hesham Nasser",
+    "copyright": "Copyright (C) 2026 Hesham Nasser",
+    "license": "GPL-3.0-only",
+    "shortDescription": "Turn any file into a black-and-white pixel video, and back.",
+    "longDescription": "ATV (Anything To Video) turns any file or folder into a black-and-white pixel video and turns the video back into the exact original files, with optional encryption and a Robust mode that survives sites like YouTube and WhatsApp.",
+    "homepage": "https://github.com/Hesham0-0Nasser/ATV",
+    "licenseFile": "../../LICENSE",
+    "category": "Utility"
+  }
+}

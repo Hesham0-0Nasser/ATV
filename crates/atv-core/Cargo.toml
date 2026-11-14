@@ -1,0 +1,37 @@
+[package]
+name = "atv-core"
+description = "ATV engine: turns files into black-and-white pixel video and back. No GUI dependencies."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+argon2.workspace = true
+chacha20poly1305.workspace = true
+crc32fast.workspace = true
+getrandom.workspace = true
+hkdf.workspace = true
+reed-solomon.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tar.workspace = true
+thiserror.workspace = true
+unicode-normalization.workspace = true
+ureq.workspace = true
+zeroize.workspace = true
+zip.workspace = true
+zstd.workspace = true
+zxcvbn.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+# Project rule: nothing in atv-core may panic on a run-time failure.
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"

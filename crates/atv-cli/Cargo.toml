@@ -1,0 +1,23 @@
+[package]
+name = "atv-cli"
+description = "Command-line tool for ATV. A thin wrapper over atv-core."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "atv"
+path = "src/main.rs"
+
+[dependencies]
+atv-core.workspace = true
+clap.workspace = true
+ctrlc.workspace = true
+rpassword.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
