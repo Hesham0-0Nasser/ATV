@@ -108,6 +108,7 @@ The code is a Cargo workspace: `crates/atv-core` does all the work and has no GU
 
 - Uploading videos that hold data may go against a site's terms of use. That is your call.
 - Robust mode was tested with real uploads to YouTube (every copy it made, 720p to 4K, restored) and WhatsApp on Android. Sites change how they compress video; keep your originals.
+- **[Test vectors](test-vectors/):** the 2 MB input, the original videos, and the real copies WhatsApp and YouTube returned, with checksums and measured damage, so anyone can check a new phone or a site's new compression against the same data.
 - Robust videos are several times larger than the data they carry, and WhatsApp's setting uses a low frame rate, so large folders make long videos.
 
 ## Credits
